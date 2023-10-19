@@ -1,0 +1,741 @@
+import csv
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+# Download NLTK stop words and wordnet
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
+
+
+# Read true data from Kaggle dataset
+data = pd.read_csv('')
+# Read fake data from Kaggle dataset
+fakedata = pd.read_csv('')
+
+# Display top 5 rows of data
+print(data.head())
+
+# Display top 5 rows of fakedata
+print(fakedata.head())
+
+"""Tokenization is done for the following reasons:
+
+Text Understanding: Tokenization breaks down text into smaller, meaningful units (tokens). This makes it easier to analyze and understand the text, as you can work with individual words or sentences.
+
+Text Cleaning: Tokenization helps clean and normalize text data. It removes unnecessary characters, spaces, and punctuation, making the text more consistent and suitable for analysis.
+
+Feature Extraction: Tokenization is often a necessary step for feature extraction in NLP tasks. Features can be derived from individual words or tokens, such as word frequency, n-grams, or word embeddings.
+
+Language Processing: Tokenization is essential for language processing tasks, such as part-of-speech tagging, named entity recognition, and sentiment analysis. These tasks rely on knowing the boundaries of words and sentences.
+
+NLTK has several tokenizers available to break raw text into tokens; we will use one called "punkt," that was trained on news articles. This tokenizer separates by white space and by special characters (punctuation), but also is smart enough to avoid certain splits that should probably not occur, such as "Mr.".  Punkt tokenizer comes with pre-trained models for tokenizing text in multiple languages. This makes it easy to tokenize text in different languages without having to create custom tokenization rules.
+"""
+
+# Tokenization with isalpha and unique tokens for true data
+data['tokenized_text'] = data['text'].apply(word_tokenize)
+
+# Tokenization with isalpha and unique tokens for fake data
+fakedata['tokenized_text'] = fakedata['text'].apply(word_tokenize)
+
+"""Filter out the words using isalpha"""
+
+data['tokenized_text'] = data['tokenized_text'].apply(lambda tokens: list(set(word for word in tokens if word.isalpha())))
+
+fakedata['tokenized_text'] = fakedata['tokenized_text'].apply(lambda tokens: list(set(word for word in tokens if word.isalpha())))
+
+data['tokenized_text'] = data['tokenized_text'].apply(lambda tokens: sorted(tokens))
+
+fakedata['tokenized_text'] = fakedata['tokenized_text'].apply(lambda tokens: sorted(tokens))
+
+type(data['tokenized_text'])
+len(data['tokenized_text'])
+
+type(fakedata['tokenized_text'])
+len(fakedata['tokenized_text'])
+
+# Top 20 tokens in true data
+top_20_tokenized_text = data['tokenized_text'].head(20)
+
+# Print the top 20 rows of the 'tokenized_text' column
+print(top_20_tokenized_text)
+
+# Top 20 tokens in fake data
+top_20_tokenized_text_fake = fakedata['tokenized_text'].head(20)
+
+# Print the top 20 rows of the 'tokenized_text' column
+print(top_20_tokenized_text_fake)
+
+"""Covering text to lowercase after tokenization is a common preprocessing step in natural language processing (NLP) for several reasons:
+
+Normalization: By converting all tokens to lowercase, you ensure that words in different cases (e.g., "apple" and "Apple") are treated as the same word. This normalization helps in reducing the dimensionality of the data and ensures that the model doesn't treat words with different cases as distinct entities.
+
+Consistency: Lowercasing tokens makes the text data more consistent and easier to work with. It prevents the model from learning case-specific patterns that might not generalize well to unseen data.
+
+Stopword Removal: If you plan to remove stopwords from the text, lowercasing the text first ensures that stopwords are correctly matched in lowercase.
+
+Efficiency: Lowercasing reduces the number of unique tokens in the text, which can lead to faster processing and reduced memory usage.
+
+
+"""
+
+# Lowercase Conversion for true data
+data['lowercase_text'] = data['tokenized_text'].apply(lambda tokens: [word.lower() for word in tokens])
+
+# Lowercase Conversion for fake data
+fakedata['lowercase_text'] = fakedata['tokenized_text'].apply(lambda tokens: [word.lower() for word in tokens])
+
+# Sort true lowercase data
+data['lowercase_text'] = data['lowercase_text'].apply(lambda tokens: sorted(set(tokens)))
+
+# Sort fake lowercase data
+fakedata['lowercase_text'] = fakedata['lowercase_text'].apply(lambda tokens: sorted(set(tokens)))
+
+# Top 20 tokens of true lowercase
+top_20_lowercase_text = data['lowercase_text'].head(20)
+
+print(top_20_lowercase_text)
+
+# Top 20 tokens of fake lowercase
+top_20_lowercase_text_fake = fakedata['lowercase_text'].head(20)
+
+print(top_20_lowercase_text_fake)
+
+"""Removing non-words or non-English words from text data can be beneficial for several reasons:
+
+Noise Reduction: Non-words, such as random strings of characters or symbols, often don't carry meaningful information in text analysis tasks. By removing them, you reduce the noise in your data, making it easier to focus on meaningful content.
+
+Efficiency: Processing non-words can be computationally expensive and can slow down text analysis tasks. Removing them upfront improves the efficiency of your analysis pipeline, as you're not wasting resources on irrelevant tokens.
+
+Consistency: Non-words can introduce inconsistencies in your data, potentially leading to false interpretations or errors in downstream tasks. By removing them, you maintain data consistency and reduce the risk of misinterpretation.
+
+The NLTK library is used to create a set of English words named english_words by downloading and importing the "words" corpus. This set serves as a reference to validate and filter text data for valid English words. By comparing words in the text data to this set, we can efficiently remove or validate words that are part of the English language.
+"""
+
+#Removal of non-words for true data
+import nltk
+nltk.download('words')
+from nltk.corpus import words
+english_words = set(words.words())
+
+# Filter for valid English words
+data['lowercase_text'] = data['lowercase_text'].apply(lambda tokens: [word for word in tokens if word in english_words])
+
+#  Sort the unique tokens alphabetically
+data['lowercase_text'] = data['lowercase_text'].apply(lambda tokens: sorted(set(tokens)))
+
+# Top 20 tokens
+top_20_lowercase_text = data['lowercase_text'].head(20)
+
+print(top_20_lowercase_text)
+
+#Removal of non-words for fake data
+import nltk
+nltk.download('words')
+from nltk.corpus import words
+english_words = set(words.words())
+
+# Filter for valid English words
+fakedata['lowercase_text'] = fakedata['lowercase_text'].apply(lambda tokens: [word for word in tokens if word in english_words])
+
+# Sort the unique tokens alphabetically
+fakedata['lowercase_text'] = fakedata['lowercase_text'].apply(lambda tokens: sorted(set(tokens)))
+
+# Top 20 tokens
+top_20_lowercase_text_fake = fakedata['lowercase_text'].head(20)
+
+print(top_20_lowercase_text_fake)
+
+"""Removing stop words is important in natural language processing and text analysis for several reasons:
+
+Noise Reduction: Stop words, such as "the," "and," "in," and "of," are the most common words in a language and appear frequently in text. However, they often carry little semantic meaning and can introduce noise into the analysis. By removing them, you can focus on the more meaningful content words, which helps in identifying important patterns and topics in the text.
+
+Efficiency: Stop words don't typically contribute much to the analysis but can significantly increase the processing time and memory requirements, especially when dealing with large datasets. Removing them can lead to more efficient and faster text processing, making it feasible to work with extensive text corpora.
+
+The line of code stop_words = set(stopwords.words('english')) is used to create a set containing commonly used stopwords in the English language. By creating a set of these stopwords, you can efficiently check whether a word in your text data is a stop word or not. This is particularly useful when you want to remove stopwords from text data to focus on the more meaningful words and improve the quality of text analysis. The resulting stop_words set provides a quick reference to check if a given word should be filtered out during text preprocessing, making the code more efficient and effective in handling natural language data.
+"""
+
+#Stopword removal for true data
+stop_words = set(stopwords.words('english'))
+data['no_stopwords_text'] = data['lowercase_text'].apply(lambda tokens: [word for word in tokens if word not in stop_words])
+
+#Stopword removal for fake data
+stop_words = set(stopwords.words('english'))
+fakedata['no_stopwords_text'] = fakedata['lowercase_text'].apply(lambda tokens: [word for word in tokens if word not in stop_words])
+
+import nltk
+from nltk.corpus import stopwords
+from nltk import FreqDist
+
+
+# Count the frequency of each word in the 'lowercase_text' column (before stopword removal)
+word_frequency = nltk.FreqDist(word for tokens in data['lowercase_text'] for word in tokens)
+
+# List the top 50 stop words by frequency
+stop_words_frequency = [(word, freq) for word, freq in word_frequency.items() if word in stop_words]
+stop_words_frequency = sorted(stop_words_frequency, key=lambda x: x[1], reverse=True)[:50]
+
+# Print the top 50 stop words
+print("Top 50 stop words by frequency for true data:")
+for word, freq in stop_words_frequency:
+    print(f'{word}: {freq}')
+
+import nltk
+from nltk.corpus import stopwords
+from nltk import FreqDist
+
+
+# Count the frequency of each word in the 'lowercase_text' column (before stopword removal)
+word_frequency_fake = nltk.FreqDist(word for tokens in fakedata['lowercase_text'] for word in tokens)
+
+# List the top 50 stop words by frequency
+stop_words_frequency = [(word, freq) for word, freq in word_frequency_fake.items() if word in stop_words]
+stop_words_frequency = sorted(stop_words_frequency, key=lambda x: x[1], reverse=True)[:50]
+
+# Print the top 50 stop words
+print("Top 50 stop words by frequency for fake data:")
+for word, freq in stop_words_frequency:
+    print(f'{word}: {freq}')
+
+print(stop_words)
+
+"""Lemmatization is necessary in natural language processing and text analysis for several reasons:
+
+Normalization and Standardization: Lemmatization helps in normalizing and standardizing words in text data. Words often exist in different inflected forms (e.g., "run," "running," "ran") or pluralizations (e.g., "dog," "dogs"). Lemmatization reduces these variations to their base or dictionary form (e.g., "run"), making text data consistent and easier to analyze.
+
+Improved Feature Extraction: In text analysis, the choice of features (words or tokens) greatly affects the quality of models. Lemmatization reduces the number of unique features by mapping different forms of the same word to a common lemma. This feature reduction not only improves computational efficiency but also reduces the risk of overfitting in machine learning models.
+
+Enhanced Semantics and Understanding: Lemmatization preserves the semantics of words. For example, it ensures that words with similar meanings are mapped to the same lemma. This is crucial for tasks like sentiment analysis, where understanding the underlying sentiment of words is essential. It also aids in search and information retrieval systems, where matching inflected forms to their base form improves accuracy.
+
+The two key advantages of using the WordNet Lemmatizer:
+
+Preservation of Semantic Meaning: The WordNet Lemmatizer aims to map words to their base or dictionary form (lemma) while preserving their semantic meaning. This means that words with different inflections or conjugations will be reduced to a common base form, ensuring that the lemmatized text maintains its original meaning. For example, both "running" and "ran" would be lemmatized to "run," reflecting their shared core concept of the action of running.
+
+Part-of-Speech Sensitivity: The WordNet Lemmatizer can take into account the part of speech (POS) of a word. This feature is especially valuable when dealing with words that have multiple meanings depending on their grammatical role. By considering the POS, it can disambiguate between different word senses and provide more contextually accurate lemmatization. For instance, it can differentiate between the noun "bat" (referring to an animal) and the verb "bat" (referring to the action of hitting a ball with a bat) and lemmatize them accordingly. This POS-awareness contributes to improved text understanding and analysis.
+"""
+
+#Lemmatization
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+wnl = nltk.WordNetLemmatizer()
+type(wnl)
+
+# Initialize the WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+
+# Lemmatize the 'no_stopwords_text' column of true data
+data['lemmatized_text'] = data['no_stopwords_text'].apply(lambda tokens: [lemmatizer.lemmatize(word) for word in tokens])
+
+# Initialize the WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+
+# Lemmatize the 'no_stopwords_text' column of fake data
+fakedata['lemmatized_text'] = fakedata['no_stopwords_text'].apply(lambda tokens: [lemmatizer.lemmatize(word) for word in tokens])
+
+from tkinter.constants import N
+# Obtain unique lemmatized tokens for true data
+unique_lemmatized_tokens = set(token for tokens in data['lemmatized_text'] for token in tokens)
+
+# Calculate the number of unique lemmatized tokens for true data
+num_unique_lemmatized_tokens = len(unique_lemmatized_tokens)
+print(num_unique_lemmatized_tokens)
+
+from tkinter.constants import N
+# Obtain unique lemmatized tokens for fake data
+unique_lemmatized_tokens_fake = set(token for tokens in fakedata['lemmatized_text'] for token in tokens)
+
+# Calculate the number of unique lemmatized tokens for fake data
+num_unique_lemmatized_tokens_fake = len(unique_lemmatized_tokens_fake)
+print(num_unique_lemmatized_tokens_fake)
+
+import nltk
+
+
+nltk.download('averaged_perceptron_tagger')
+
+# True data
+# POS tagging
+data['pos_tags'] = data['no_stopwords_text'].apply(lambda tokens: nltk.pos_tag(tokens))
+
+# Lemmatize based on POS tags
+lemmatizer = WordNetLemmatizer()
+
+def lemmatize_with_pos(pos_tags):
+    lemmatized_tokens = []
+    for word, pos in pos_tags:
+        # Map POS tags to WordNet POS tags
+        if pos.startswith('J'):
+            # Adjective
+            wordnet_pos = nltk.corpus.wordnet.ADJ
+        elif pos.startswith('V'):
+            # Verb
+            wordnet_pos = nltk.corpus.wordnet.VERB
+        elif pos.startswith('N'):
+            # Noun
+            wordnet_pos = nltk.corpus.wordnet.NOUN
+        elif pos.startswith('R'):
+            # Adverb
+            wordnet_pos = nltk.corpus.wordnet.ADV
+        else:
+            # Default to noun
+            wordnet_pos = nltk.corpus.wordnet.NOUN
+
+        # Lemmatize using WordNet
+        lemma = lemmatizer.lemmatize(word, wordnet_pos)
+        lemmatized_tokens.append(lemma)
+
+    return lemmatized_tokens
+
+data['lemmatized_text'] = data['pos_tags'].apply(lemmatize_with_pos)
+
+# POS tagging for fake data
+fakedata['pos_tags'] = fakedata['no_stopwords_text'].apply(lambda tokens: nltk.pos_tag(tokens))
+
+# Lemmatize based on POS tags
+lemmatizer = WordNetLemmatizer()
+
+def lemmatize_with_pos(pos_tags):
+    lemmatized_tokens = []
+    for word, pos in pos_tags:
+        # Map POS tags to WordNet POS tags
+        if pos.startswith('J'):
+            # Adjective
+            wordnet_pos = nltk.corpus.wordnet.ADJ
+        elif pos.startswith('V'):
+            # Verb
+            wordnet_pos = nltk.corpus.wordnet.VERB
+        elif pos.startswith('N'):
+            # Noun
+            wordnet_pos = nltk.corpus.wordnet.NOUN
+        elif pos.startswith('R'):
+            # Adverb
+            wordnet_pos = nltk.corpus.wordnet.ADV
+        else:
+            # Default to noun
+            wordnet_pos = nltk.corpus.wordnet.NOUN
+
+        # Lemmatize using WordNet
+        lemma = lemmatizer.lemmatize(word, wordnet_pos)
+        lemmatized_tokens.append(lemma)
+
+    return lemmatized_tokens
+
+fakedata['lemmatized_text'] = fakedata['pos_tags'].apply(lemmatize_with_pos)
+
+# Count the frequency of each word in the 'lemmatized_text' column (after lemmatization)
+word_frequency = nltk.FreqDist(word for tokens in data['lemmatized_text'] for word in tokens)
+
+# List the top 50 content words by frequency (excluding stop words)
+content_words_frequency = [(word, freq) for word, freq in word_frequency.items() if word not in stop_words]
+content_words_frequency = sorted(content_words_frequency, key=lambda x: x[1], reverse=True)[:50]
+
+# Print the top 50 content words
+print("Top 50 content words by frequency for true data:")
+for word, freq in content_words_frequency:
+    print(f'{word}: {freq}')
+
+# Count the frequency of each word in the 'lemmatized_text' column (after lemmatization)
+word_frequency = nltk.FreqDist(word for tokens in fakedata['lemmatized_text'] for word in tokens)
+
+# List the top 50 content words by frequency (excluding stop words)
+content_words_frequency = [(word, freq) for word, freq in word_frequency.items() if word not in stop_words]
+content_words_frequency = sorted(content_words_frequency, key=lambda x: x[1], reverse=True)[:50]
+
+# Print the top 50 content words
+print("Top 50 content words by frequency for fake data:")
+for word, freq in content_words_frequency:
+    print(f'{word}: {freq}')
+
+from nltk.util import ngrams
+
+
+# Combine all tokens into a single list
+all_tokens = [token for tokens in data['lowercase_text'] for token in tokens]
+
+# Create bigrams from the list of tokens
+bigrams = list(ngrams(all_tokens, 2))
+
+# Filter bigrams that include punctuation marks or non-alphabetic tokens
+filtered_bigrams = [bigram for bigram in bigrams if all(word.isalpha() for word in bigram)]
+
+# Create a set of stopwords for faster lookup
+stop_words = set(nltk.corpus.stopwords.words('english'))
+
+# Filter bigrams that include stopwords
+filtered_bigrams = [bigram for bigram in filtered_bigrams if all(word not in stop_words for word in bigram)]
+
+# Calculate the frequency distribution of filtered bigrams
+bigram_freq = nltk.FreqDist(filtered_bigrams)
+
+# List the top 50 bigrams by frequency
+top_50_bigrams = bigram_freq.most_common(50)
+
+# Print the top 50 bigrams
+print("Top 50 bigrams by frequency for true data:")
+for bigram, freq in top_50_bigrams:
+    print(f'{bigram}: {freq}')
+
+from nltk.util import ngrams
+
+
+# Combine all tokens into a single list
+all_tokens = [token for tokens in fakedata['lowercase_text'] for token in tokens]
+
+# Create bigrams from the list of tokens
+bigrams = list(ngrams(all_tokens, 2))
+
+# Filter bigrams that include punctuation marks or non-alphabetic tokens
+filtered_bigrams = [bigram for bigram in bigrams if all(word.isalpha() for word in bigram)]
+
+# Create a set of stopwords for faster lookup
+stop_words = set(nltk.corpus.stopwords.words('english'))
+
+# Filter bigrams that include stopwords
+filtered_bigrams = [bigram for bigram in filtered_bigrams if all(word not in stop_words for word in bigram)]
+
+# Calculate the frequency distribution of filtered bigrams
+bigram_freq = nltk.FreqDist(filtered_bigrams)
+
+# List the top 50 bigrams by frequency
+top_50_bigrams = bigram_freq.most_common(50)
+
+# Print the top 50 bigrams
+print("Top 50 bigrams by frequency for fake data:")
+for bigram, freq in top_50_bigrams:
+    print(f'{bigram}: {freq}')
+
+from nltk.util import ngrams
+from nltk.collocations import BigramAssocMeasures, BigramCollocationFinder
+
+# Combine all lemmatized tokens into a single list
+all_tokens = [token for tokens in data['lowercase_text'] for token in tokens]
+
+# Create bigrams from the list of tokens
+bigrams = list(ngrams(all_tokens, 2))
+
+# Create a BigramCollocationFinder
+finder = BigramCollocationFinder.from_words(all_tokens)
+
+# Apply a frequency filter (min frequency 5)
+finder.apply_freq_filter(5)
+
+# Calculate Mutual Information scores
+bigram_measures = BigramAssocMeasures()
+mi_scores = finder.score_ngrams(bigram_measures.pmi)
+
+# Sort the bigrams by Mutual Information score in descending order
+sorted_bigrams = sorted(mi_scores, key=lambda x: x[1], reverse=True)
+
+# List the top 50 bigrams by Mutual Information score
+top_50_bigrams = sorted_bigrams[:50]
+
+# Print the top 50 bigrams and their Mutual Information scores
+print("Top 50 bigrams by Mutual Information score for true data:")
+for bigram, score in top_50_bigrams:
+    print(f'{bigram}: {score}')
+
+from nltk.util import ngrams
+from nltk.collocations import BigramAssocMeasures, BigramCollocationFinder
+
+# Combine all lemmatized tokens into a single list
+all_tokens = [token for tokens in fakedata['lowercase_text'] for token in tokens]
+
+# Create bigrams from the list of tokens
+bigrams = list(ngrams(all_tokens, 2))
+
+# Create a BigramCollocationFinder
+finder = BigramCollocationFinder.from_words(all_tokens)
+
+# Apply a frequency filter (min frequency 5)
+finder.apply_freq_filter(5)
+
+# Calculate Mutual Information scores
+bigram_measures = BigramAssocMeasures()
+mi_scores = finder.score_ngrams(bigram_measures.pmi)
+
+# Sort the bigrams by Mutual Information score in descending order
+sorted_bigrams = sorted(mi_scores, key=lambda x: x[1], reverse=True)
+
+# List the top 50 bigrams by Mutual Information score
+top_50_bigrams = sorted_bigrams[:50]
+
+# Print the top 50 bigrams and their Mutual Information scores
+print("Top 50 bigrams by Mutual Information score for fake data:")
+for bigram, score in top_50_bigrams:
+    print(f'{bigram}: {score}')
+
+import nltk
+from collections import Counter
+
+# Assuming you have already performed POS tagging and have the 'pos_tags' column
+# You can modify the 'pos_tags' column to include only adjectives
+adjective_tags = ['JJ', 'JJR', 'JJS']  # These are common POS tags for adjectives
+data['adjectives'] = data['pos_tags'].apply(lambda pos_tags: [word for word, pos in pos_tags if pos in adjective_tags])
+
+# Combine all adjective tokens into a single list
+all_adjectives = [adj for adjs in data['adjectives'] for adj in adjs]
+
+# Count the frequency of each adjective
+adjective_frequency = Counter(all_adjectives)
+
+# List the top 50 adjectives by frequency
+top_50_adjectives = adjective_frequency.most_common(50)
+
+# Print the top 50 adjectives
+print("Top 50 adjectives in true data:")
+for adjective, frequency in top_50_adjectives:
+    print(f'{adjective}: {frequency}')
+
+import nltk
+from collections import Counter
+
+# Assuming you have already performed POS tagging and have the 'pos_tags' column
+# You can modify the 'pos_tags' column to include only adjectives
+adjective_tags = ['JJ', 'JJR', 'JJS']  # These are common POS tags for adjectives
+fakedata['adjectives'] = fakedata['pos_tags'].apply(lambda pos_tags: [word for word, pos in pos_tags if pos in adjective_tags])
+
+# Combine all adjective tokens into a single list
+all_adjectives = [adj for adjs in fakedata['adjectives'] for adj in adjs]
+
+# Count the frequency of each adjective
+adjective_frequency = Counter(all_adjectives)
+
+# List the top 50 adjectives by frequency
+top_50_adjectives = adjective_frequency.most_common(50)
+
+# Print the top 50 adjectives
+print("Top 50 adjectives in fake data:")
+for adjective, frequency in top_50_adjectives:
+    print(f'{adjective}: {frequency}')
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+import string
+
+
+
+# Tokenize the text and calculate statistics directly
+data['TotalWords'] = data['text'].apply(lambda text: len(nltk.word_tokenize(text)))
+data['TotalContentWords'] = data['text'].apply(lambda text: len([word for word in nltk.word_tokenize(text) if word.isalpha() and word.lower() not in stopwords.words('english')]))
+data['TotalCapitalizedWords'] = data['text'].apply(lambda text: len([word for word in nltk.word_tokenize(text) if word.isupper() and word != "I"]))
+data['TotalExclamationMarks'] = data['text'].apply(lambda text: text.count('!'))
+data['TotalPunctuationMarks'] = data['text'].apply(lambda text: len([char for char in text if char in string.punctuation]))
+
+# Save the updated DataFrame to a CSV file
+data.to_csv('updated_data_true.csv', index=False)
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+import string
+
+
+
+# Tokenize the text and calculate statistics directly
+fakedata['TotalWords'] = fakedata['text'].apply(lambda text: len(nltk.word_tokenize(text)))
+fakedata['TotalContentWords'] = fakedata['text'].apply(lambda text: len([word for word in nltk.word_tokenize(text) if word.isalpha() and word.lower() not in stopwords.words('english')]))
+fakedata['TotalCapitalizedWords'] = fakedata['text'].apply(lambda text: len([word for word in nltk.word_tokenize(text) if word.isupper() and word != "I"]))
+fakedata['TotalExclamationMarks'] = fakedata['text'].apply(lambda text: text.count('!'))
+fakedata['TotalPunctuationMarks'] = fakedata['text'].apply(lambda text: len([char for char in text if char in string.punctuation]))
+
+# Save the updated DataFrame to a CSV file
+fakedata.to_csv('updated_data_fake.csv', index=False)
+
+print(data['TotalWords'])
+
+print(fakedata['TotalWords'])
+
+print(data['TotalContentWords'])
+
+print(fakedata['TotalContentWords'])
+
+print(data['TotalCapitalizedWords'])
+
+print(fakedata['TotalCapitalizedWords'])
+
+print(data['TotalExclamationMarks'])
+
+print(fakedata['TotalExclamationMarks'])
+
+print(data['TotalPunctuationMarks'])
+
+print(fakedata['TotalPunctuationMarks'])
+
+"""The results of comparing bigrams by frequencies and by mutual information scores for true news and fake news articles are as follows:
+
+Top 50 Bigrams by Frequency:
+
+For True News:
+The top bigrams by frequency for true news include combinations like "president presidential," "would year," "said say," "state statement," and more. These are frequently occurring pairs of words in true news articles.
+For Fake News:
+The top bigrams by frequency for fake news include combinations like "new news," "via video," "president presidential," "said say," and more. These are frequently occurring pairs of words in fake news articles.
+
+Top 50 Bigrams by Mutual Information Score:
+
+For True News:
+The top bigrams by mutual information score for true news include combinations like "bagger barrack," "viola virtu," "cremation crematorium," "emperor empress," and others. These are bigrams that have a high mutual information score, indicating that they appear together more often than expected by chance.
+For Fake News:
+The top bigrams by mutual information score for fake news include combinations like "indexed indexing," "dialectic dialectical," "cardin carper," "meter microscopic," and others. These are bigrams that have a high mutual information score, indicating their association in fake news articles.
+Comparison:
+
+Both true and fake news articles have certain common bigrams in their frequently occurring pairs of words. For example, "president presidential" is common in both datasets.
+However, when considering mutual information scores, the bigrams with the highest scores differ between true and fake news. These high mutual information score bigrams represent more distinctive associations within each dataset.
+In the true news dataset, bigrams like "bagger barrack" and "cremation crematorium" are distinctive, suggesting specific topics or contexts that are unique to true news articles.
+In the fake news dataset, bigrams like "indexed indexing" and "dialectic dialectical" are distinctive, indicating unique themes or topics associated with fake news articles.
+Overall, the comparison shows that while both true and fake news share some common bigrams, the distinctive associations captured by mutual information scores can help identify specific topics or language patterns that are more prevalent in one dataset compared to the other
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm, shapiro, ttest_ind
+
+# Replace 'true_word_counts' and 'fake_word_counts' with your actual data columns
+true_word_counts = data['TotalWords'].values
+fake_word_counts = fakedata['TotalWords'].values
+
+# Calculate mean and standard deviation for each dataset
+true_mean = np.mean(true_word_counts)
+fake_mean = np.mean(fake_word_counts)
+true_std = np.std(true_word_counts)
+fake_std = np.std(fake_word_counts)
+
+# Create a range of values for the x-axis
+x_range = np.linspace(min(true_word_counts.min(), fake_word_counts.min()), max(true_word_counts.max(), fake_word_counts.max()), 100)
+
+# Calculate the PDF (Probability Density Function) for the normal distribution
+true_pdf = norm.pdf(x_range, true_mean, true_std)
+fake_pdf = norm.pdf(x_range, fake_mean, fake_std)
+
+# Plot the PDFs
+plt.figure(figsize=(10, 6))
+plt.plot(x_range, true_pdf, label='True News', color='blue')
+plt.plot(x_range, fake_pdf, label='Fake News', color='red')
+plt.title('Word Count Distribution')
+plt.xlabel('Word Count')
+plt.ylabel('Probability Density')
+plt.legend()
+plt.grid(True)
+
+
+#We perform a two-sample t-test to compare the means of the two datasets. The t-test helps determine if there is a significant difference between the word counts of true and fake news articles.
+# Perform a t-test for independent samples
+t_stat, t_p_value = ttest_ind(true_word_counts, fake_word_counts, equal_var=False)
+
+print(f'T-test statistic: {t_stat}')
+
+plt.show()
+
+"""T-Test Statistic: The negative t-test statistic indicates that the mean word count of true news articles is significantly lower than the mean word count of fake news articles. In other words, fake news articles tend to have more words on average compared to true news articles."""
+
+import pandas as pd
+import numpy as np
+from scipy.stats import ttest_ind
+import matplotlib.pyplot as plt
+
+# Load the updated CSV data files for true and fake news
+true_data = pd.read_csv('updated_data_true.csv')
+fake_data = pd.read_csv('updated_data_fake.csv')
+
+# Calculate means for each statistic
+true_word_mean = true_data['TotalWords'].mean()
+fake_word_mean = fake_data['TotalWords'].mean()
+
+true_content_mean = true_data['TotalContentWords'].mean()
+fake_content_mean = fake_data['TotalContentWords'].mean()
+
+true_capitalized_mean = true_data['TotalCapitalizedWords'].mean()
+fake_capitalized_mean = fake_data['TotalCapitalizedWords'].mean()
+
+true_exclamation_mean = true_data['TotalExclamationMarks'].mean()
+fake_exclamation_mean = fake_data['TotalExclamationMarks'].mean()
+
+true_punctuation_mean = true_data['TotalPunctuationMarks'].mean()
+fake_punctuation_mean = fake_data['TotalPunctuationMarks'].mean()
+
+# Perform t-tests to compare means
+t_stat_word, p_value_word = ttest_ind(true_data['TotalWords'], fake_data['TotalWords'], equal_var=False)
+t_stat_content, p_value_content = ttest_ind(true_data['TotalContentWords'], fake_data['TotalContentWords'], equal_var=False)
+t_stat_capitalized, p_value_capitalized = ttest_ind(true_data['TotalCapitalizedWords'], fake_data['TotalCapitalizedWords'], equal_var=False)
+t_stat_exclamation, p_value_exclamation = ttest_ind(true_data['TotalExclamationMarks'], fake_data['TotalExclamationMarks'], equal_var=False)
+t_stat_punctuation, p_value_punctuation = ttest_ind(true_data['TotalPunctuationMarks'], fake_data['TotalPunctuationMarks'], equal_var=False)
+
+# Create bar charts to compare means
+# Word Count
+plt.figure(figsize=(10, 6))
+plt.bar(['True News', 'Fake News'], [true_word_mean, fake_word_mean], color=['blue', 'red'])
+plt.title('Average Word Count')
+plt.ylabel('Mean Word Count')
+plt.show()
+
+# Content Word Count
+plt.figure(figsize=(10, 6))
+plt.bar(['True News', 'Fake News'], [true_content_mean, fake_content_mean], color=['blue', 'red'])
+plt.title('Average Content Word Count')
+plt.ylabel('Mean Content Word Count')
+plt.show()
+
+# Capitalized Word Count
+plt.figure(figsize=(10, 6))
+plt.bar(['True News', 'Fake News'], [true_capitalized_mean, fake_capitalized_mean], color=['blue', 'red'])
+plt.title('Average Capitalized Word Count')
+plt.ylabel('Mean Capitalized Word Count')
+plt.show()
+
+# Exclamation Marks
+plt.figure(figsize=(10, 6))
+plt.bar(['True News', 'Fake News'], [true_exclamation_mean, fake_exclamation_mean], color=['blue', 'red'])
+plt.title('Average Exclamation Marks')
+plt.ylabel('Mean Exclamation Marks')
+plt.show()
+
+# Punctuation Marks
+plt.figure(figsize=(10, 6))
+plt.bar(['True News', 'Fake News'], [true_punctuation_mean, fake_punctuation_mean], color=['blue', 'red'])
+plt.title('Average Punctuation Marks')
+plt.ylabel('Mean Punctuation Marks')
+plt.show()
+
+# Provide explanations for the discovered differences
+# Example:
+if p_value_word < 0.05:
+    print("There is a significant difference in word counts between true and fake news.")
+else:
+    print("Word counts do not significantly differ between true and fake news.")
+
+if p_value_content < 0.05:
+    print("There is a significant difference in content word counts between true and fake news.")
+else:
+    print("Content word counts do not significantly differ between true and fake news.")
+
+# Repeat similar explanations for other statistics
+
+# Capitalized Word Count
+if p_value_capitalized < 0.05:
+    print("There is a significant difference in the use of capitalized words between true and fake news.")
+else:
+    print("The use of capitalized words does not significantly differ between true and fake news.")
+
+# Exclamation Marks
+if p_value_exclamation < 0.05:
+    print("There is a significant difference in the use of exclamation marks between true and fake news.")
+else:
+    print("The use of exclamation marks does not significantly differ between true and fake news.")
+
+# Punctuation Marks
+if p_value_punctuation < 0.05:
+    print("There is a significant difference in the use of punctuation marks between true and fake news.")
+else:
+    print("The use of punctuation marks does not significantly differ between true and fake news.")
+
+"""Fake news uses a lot more word count, capitalized words, exclamation marks, and punctuation marks than true news.
+
+
+The findings from the analysis suggest that fake news articles may employ certain linguistic tactics to make their content more attention-grabbing, sensational, or persuasive. Specifically, the use of capitalized words, frequent exclamation marks, and an abundance of punctuation marks in fake news articles can contribute to a more dramatic and emphatic writing style.
+
+While it's not necessarily an indicator that fake news is trying to appear real by exaggerating, these linguistic techniques are commonly associated with sensationalism and can be used to evoke emotional responses from readers. Exaggeration and sensationalism can be strategies employed to capture readers' attention, create a sense of urgency, or make claims appear more convincing.
+
+"""
